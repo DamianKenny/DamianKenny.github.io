@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Game Dev Portfolio</title>
+    <!-- Using a more reliable Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Only include one version of Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <!-- Include Three.js and VANTA libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+        
+        :root {
+            --bg-color: #000;
+            --text-color: #fff;
+            --primary-color: #0ff;
+            --secondary-color: #a0f;
+            --card-bg: #111;
+            --border-color: #0ff;
+        }
+        .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        .retro-font {
+            font-family: 'VT323', monospace;
+        }
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+        .crt-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
+            pointer-events: none;
+            z-index: 9998;
+        }
+        .glow-text {
+            text-shadow: 0 0 5px var(--primary-color), 0 0 10px var(--primary-color);
+        }
+        .pixel-border {
+            border: 4px solid var(--border-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        .pixel-button {
+            transition: all 0.3s;
+        }
+        .pixel-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px #0ff;
+        }
+     
+        .button1,
+        .button1::after {
+        padding: 16px 20px;
+        font-size: 18px;
+        background: linear-gradient(45deg, transparent 5%, #ff013c 5%);
+        border: 0;
+        color: #fff;
+        letter-spacing: 3px;
+        line-height: 1;
+        box-shadow: 6px 0px 0px #00e6f6;
+        outline: transparent;
+        position: relative;
+        }
+
+        .button1::after {
+        --slice-0: inset(50% 50% 50% 50%);
+        --slice-1: inset(80% -6px 0 0);
+        --slice-2: inset(50% -6px 30% 0);
+        --slice-3: inset(10% -6px 85% 0);
+        --slice-4: inset(40% -6px 43% 0);
+        --slice-5: inset(80% -6px 5% 0);
+        content: "HOVER ME";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 3%, #00e6f6 3%, #00e6f6 5%, #ff013c 5%);
+        text-shadow: -3px -3px 0px #f8f005, 3px 3px 0px #00e6f6;
+        clip-path: var(--slice-0);
+        }
+
+        .button1:hover::after {
+        animation: 1s glitch;
+        animation-timing-function: steps(2, end);
+        }
+
+        @keyframes glitch {
+        0% {
+          clip-path: var(--slice-1);
+          transform: translate(-20px, -10px);
+        }
+
+        10% {
+          clip-path: var(--slice-3);
+          transform: translate(10px, 10px);
+        }
+
+        20% {
+          clip-path: var(--slice-1);
+          transform: translate(-10px, 10px);
+        }
+
+        30% {
+          clip-path: var(--slice-3);
+          transform: translate(0px, 5px);
+        }
+
+        40% {
+          clip-path: var(--slice-2);
+          transform: translate(-5px, 0px);
+        }
+
+        50% {
+          clip-path: var(--slice-3);
+          transform: translate(5px, 0px);
+        }
+
+        60% {
+          clip-path: var(--slice-4);
+          transform: translate(5px, 10px);
+        }
+
+        70% {
+          clip-path: var(--slice-2);
+          transform: translate(-10px, 10px);
+        }
+
+        80% {
+          clip-path: var(--slice-5);
+          transform: translate(20px, -10px);
+        }
+
+        90% {
+          clip-path: var(--slice-1);
+          transform: translate(-10px, 0px);
+        }
+
+        100% {
+          clip-path: var(--slice-1);
+          transform: translate(0);
+        }
+        }
+     
+        .cosmic-portal-btn {
+          --btn-bg: #1a1a2e;
+          --btn-color: #e94560;
+          --btn-highlight: #16213e;
+          --portal-color1: #0f3460;
+          --portal-color2: #e94560;
+
+          position: relative;
+          font-family: Arial, sans-serif;
+          font-size: 1.2em;
+          font-weight: bold;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--btn-color);
+          background-color: var(--btn-bg);
+          border: none;
+          padding: 1em 2em;
+          cursor: pointer;
+          overflow: hidden;
+          transition: all 0.3s ease;
+          clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 90% 100%, 10% 100%, 0% 70%);
+        }
+
+        .cosmic-portal-btn::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: conic-gradient(
+            from 0deg at 50% 50%,
+            var(--portal-color1) 0deg,
+            var(--portal-color2) 120deg,
+            var(--portal-color1) 240deg,
+            var(--portal-color2) 360deg
+          );
+          animation: rotatePortal 10s linear infinite;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .cosmic-portal-btn:hover::before {
+          opacity: 0.8;
+        }
+
+        .cosmic-portal-btn::after {
+          content: "";
+          position: absolute;
+          inset: 0.15em;
+          background-color: var(--btn-bg);
+          clip-path: inherit;
+          z-index: 1;
+        }
+
+        .btn-text {
+          position: relative;
+          z-index: 2;
+        }
+
+        .portal-effect {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(
+            circle at 50% 50%,
+            var(--btn-highlight),
+            transparent 50%
+          );
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          z-index: 1;
+        }
+
+        .cosmic-portal-btn:hover .portal-effect {
+          opacity: 1;
+          animation: pulsePortal 2s ease-in-out infinite;
+        }
+
+        .cosmic-portal-btn:hover {
+          transform: translateY(-0.25em);
+          box-shadow: 0 0.5em 1em rgba(233, 69, 96, 0.2);
+        }
+
+        .cosmic-portal-btn:active {
+          transform: translateY(0);
+        }
+
+        .cosmic-portal-btn:focus {
+          outline: none;
+          box-shadow: 0 0 0 0.2em rgba(233, 69, 96, 0.5);
+        }
+
+        @keyframes rotatePortal {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes pulsePortal {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .cosmic-portal-btn::before,
+          .cosmic-portal-btn:hover .portal-effect {
+            animation: none;
+          }
+        }
+
+
+    </style>
+</head>
+<body class="bg-[var(--bg-color)] text-[var(--text-color)] retro-font overflow-x-hidden">
+    <div class="scanlines"></div>
+    <div class="crt-effect"></div>
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 right-0 bg-[var(--bg-color)] bg-opacity-90 z-50 pixel-border-b">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <a href="#" class="text-2xl pixel-font text-[var(--primary-color)]">DAMIAN KENNY</a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="text-xl text-white hover:text-cyan-400 transition-colors">HOME</a>
+                    <a href="#about" class="text-xl text-white hover:text-cyan-400 transition-colors">ABOUT</a>
+                    <a href="#projects" class="text-xl text-white hover:text-cyan-400 transition-colors">PROJECTS</a>
+                    <a href="#contact" class="text-xl text-white hover:text-cyan-400 transition-colors">CONTACT</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-70 z-0"></div>
+        <div class="absolute inset-0 z-0" id="vanta-bg"></div>
+        <div class="container mx-auto px-6 z-10 text-center" data-aos="fade-up">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2 text-center lg:text-left">
+                    <h1 class="text-6xl md:text-8xl mb-4 pixel-font glow-text">DAMIAN KENNY</h1>
+                    <p class="text-2xl md:text-3xl mb-4 glow-text">COMPUTER SCIENCE PORTFOLIO</p>
+                    <p class="text-xl md:text-2xl mb-8 glow-text">LEVEL: 2nd Year at NIBM(3rd Year starting Oct 9, 2025)</p>
+                </div>
+                <div class="lg:w-1/4 ml-60">
+                    <div class="relative">
+                        
+                        <div class="p-2 bg-gray-800 border-4 border-[var(--primary-color)] shadow-[0_0_15px_var(--primary-color)]">
+                            <img src="./assets/me.jpg" alt="Damian Kenny" class="w-74 h-auto">
+                        </div>
+                        <div class="absolute -bottom-2 -right-2 w-4 h-4 bg-[var(--primary-color)]"></div>
+                        <div class="absolute -bottom-2 -left-2 w-4 h-4 bg-[var(--primary-color)]"></div>
+                        <div class="absolute -top-2 -right-2 w-4 h-4 bg-[var(--primary-color)]"></div>
+                        <div class="absolute -top-2 -left-2 w-4 h-4 bg-[var(--primary-color)]"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center gap-4 mt-8">
+                <a href="#about" class="pixel-button bg-transparent border-2 border-cyan-400 text-cyan-400 px-8 py-3 text-xl hover:bg-cyan-400 hover:text-black transition-all">
+                    START GAME
+                </a>
+
+                <a href="#projects" class="pixel-button bg-transparent border-2 border-purple-400 text-purple-400 px-8 py-3 text-xl hover:bg-purple-400 hover:text-black transition-all">
+                    VIEW LEVELS
+                </a>
+               
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-gray-900 relative">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl md:text-5xl mb-12 text-center pixel-font glow-text" data-aos="fade-down">ABOUT_ME</h2>
+            
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/3" data-aos="fade-right">
+                    <div class="pixel-border p-2 bg-gray-800">
+                        <!-- Using a placeholder image -->
+                        <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" alt="Coding Image" class="w-full h-auto">
+                    </div>
+                </div>
+                <div class="lg:w-2/3" data-aos="fade-left">
+                    <div class="bg-gray-800 p-8 pixel-border">
+                        <h3 class="text-3xl mb-6 pixel-font text-cyan-400">STATS</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <h4 class="text-xl text-purple-400 mb-2">CLASS:</h4>
+                                <p class="text-xl">Computer Science Student</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xl text-purple-400 mb-2">SPECIALIZATION:</h4>
+                                <p class="text-xl">Full Stack Development</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xl text-purple-400 mb-2">LEVEL:</h4>
+                                <p class="text-xl">2nd Year (3rd Year starting Oct 9, 2025)</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xl text-purple-400 mb-2">XP:</h4>
+                                <p class="text-xl">85% to next level</p>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl mb-4 pixel-font text-cyan-400">BIO</h3>
+                        <p class="text-lg mb-6">
+                            Hello! I'm Damian Kenny, a passionate computer science student with expertise in full-stack development and emerging technologies.
+                            My journey in programming began when I wrote my first line of code at 15, and I've been continuously expanding my skills ever since.
+                        </p>
+                        <p class="text-lg mb-6">
+                            I specialize in Java, JavaScript, and Python development, with experience in web technologies (HTML/CSS, React.js), databases (SQL/NoSQL),
+                            and system programming (C/C++). I'm also exploring Robotics and Internet of Things (IoT) applications. Currently advancing my skills in
+                            Android development with Android Studio.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">JAVA</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">JAVASCRIPT</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">REACT.JS</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">PYTHON</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">SQL</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">NOSQL</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">C/C++</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">C#</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">ROBOTICS</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">IOT</span>
+                            <span class="px-4 py-2 bg-gray-700 text-cyan-400">ANDROID</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-20 bg-black relative">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl md:text-5xl mb-12 text-center pixel-font glow-text" data-aos="fade-down">MY_PROJECTS</h2>
+            <p class="text-center text-xl mb-12">Check out my work on <a href="https://github.com/DamianKenny?tab=repositories" class="text-cyan-400 hover:text-purple-400" target="_blank">GitHub</a></p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project 1 -->
+                <div class="bg-gray-900 p-6 pixel-border" data-aos="flip-left">
+                    <div class="mb-4 overflow-hidden">
+                        <img src="./assets/robot.jpg" alt="Java Project" class="w-full h-48 object-cover hover:scale-105 transition-transform">
+                    </div>
+                    <h3 class="text-2xl mb-2 pixel-font text-cyan-400">Medical Assistance Robot & Application</h3>
+                    <p class="text-gray-300 mb-4">Medical robot and Application for Healthcare, integrating both Robotics and IoT using realtime data for sensor data, automation etc.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-purple-400">JAVA | C++</span>
+                        <a href="https://github.com/DamianKenny/Medical-Assistance-Robot-and-Application-IoT-Project" class="text-cyan-400 hover:text-white transition-colors" target="_blank">
+                            <i data-feather="github"></i> CODE
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Project 2 -->
+                <div class="bg-gray-900 p-6 pixel-border" data-aos="flip-left" data-aos-delay="100">
+                    <div class="mb-4 overflow-hidden">
+                        <img src="./assets/app.jpeg" alt="Web Project" class="w-full h-48 object-cover hover:scale-105 transition-transform">
+                    </div>
+                    <h3 class="text-2xl mb-2 pixel-font text-cyan-400">Smart Tuition Management Application</h3>
+                    <p class="text-gray-300 mb-4">Full-stack android application for managing tuition for 3 users: Admin, Student and Teacher. Contains features such as QR Code scanning, saving and downloading files etc. </p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-purple-400">JAVA | XML | FIREBASE</span>
+                        <a href="https://github.com/DamianKenny" class="text-cyan-400 hover:text-white transition-colors" target="_blank">
+                            <i data-feather="github"></i> CODE
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Project 3 -->
+                <div class="bg-gray-900 p-6 pixel-border" data-aos="flip-left" data-aos-delay="200">
+                    <div class="mb-4 overflow-hidden">
+                        <img src="./assets/campus.png" alt="Android Project" class="w-full h-48 object-cover hover:scale-105 transition-transform">
+                    </div>
+                    <h3 class="text-2xl mb-2 pixel-font text-cyan-400">Campus Navigator Tool</h3>
+                    <p class="text-gray-300 mb-4">Campus Navigator is a graph-based navigation tool designed to help users find the most efficient routes between locations on a university campus.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-purple-400">PYTHON | JavaScript | CSS | HTML</span>
+                        <a href="https://github.com/DamianKenny/Campus-Navigator-Tool" class="text-cyan-400 hover:text-white transition-colors" target="_blank">
+                            <i data-feather="github"></i> CODE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-900 relative">
+        <div class="container mx-auto px-6">
+            <h2 class="text-4xl md:text-5xl mb-12 text-center pixel-font glow-text" data-aos="fade-down">CONTACT_ME</h2>
+            
+            <div class="max-w-3xl mx-auto bg-gray-800 p-8 pixel-border" data-aos="zoom-in">
+                <form class="space-y-6" id="contact-form">
+                    <div>
+                        <label for="name" class="block text-lg text-cyan-400 mb-2">PLAYER_NAME</label>
+                        <input type="text" id="name" class="w-full bg-gray-700 border-b-2 border-cyan-400 px-4 py-2 text-white focus:outline-none focus:border-purple-400" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-lg text-cyan-400 mb-2">EMAIL</label>
+                        <input type="email" id="email" class="w-full bg-gray-700 border-b-2 border-cyan-400 px-4 py-2 text-white focus:outline-none focus:border-purple-400" required>
+                    </div>
+                    <div>
+                        <label for="message" class="block text-lg text-cyan-400 mb-2">MESSAGE</label>
+                        <textarea id="message" rows="5" class="w-full bg-gray-700 border-b-2 border-cyan-400 px-4 py-2 text-white focus:outline-none focus:border-purple-400" required></textarea>
+                    </div>
+                    <button type="submit" class="pixel-button bg-cyan-400 text-black px-8 py-3 text-xl hover:bg-purple-400 hover:text-white transition-all">
+                        SEND MESSAGE
+                    </button>
+                </form>
+                
+                <div class="mt-12 pt-8 border-t border-gray-700">
+                    <h3 class="text-2xl mb-6 text-center pixel-font text-purple-400">OR FIND ME HERE</h3>
+                    <div class="flex justify-center gap-6">
+                        <a href="https://github.com/DamianKenny" class="text-cyan-400 hover:text-white transition-colors text-2xl" target="_blank">
+                            <i data-feather="github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/damian-kenny-3a1a6534b" class="text-cyan-400 hover:text-white transition-colors text-2xl">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                        <a href="mailto:damiankenny007@gmail.com" class="text-cyan-400 hover:text-white transition-colors text-2xl">
+                            <i data-feather="mail"></i>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 bg-[var(--bg-color)] text-center">
+        <p class="text-gray-500">© 2023 DAMIAN KENNY. ALL RIGHTS RESERVED.</p>
+        <p class="text-gray-600 mt-2">COMPUTER SCIENCE PORTFOLIO</p>
+    </footer>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+        
+        // Initialize Feather Icons
+        feather.replace();
+        
+        // Initialize VANTA.js after the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if VANTA is available
+            if (typeof VANTA !== 'undefined') {
+                VANTA.GLOBE({
+                    el: "#vanta-bg",
+                    mouseControls: true,
+                    touchControls: true,
+                    gyroControls: false,
+                    minHeight: 200.00,
+                    minWidth: 200.00,
+                    scale: 1.00,
+                    scaleMobile: 1.00,
+                    color: 0x00ffff,
+                    backgroundColor: 0x0,
+                    size: 0.8
+                });
+            } else {
+                console.error("VANTA.js is not loaded");
+                // Fallback background if VANTA fails
+                document.getElementById('vanta-bg').style.background = 'linear-gradient(135deg, #000000 0%, #0a0a2a 100%)';
+            }
+            
+            // Retro console typing effect
+            const heroText = document.querySelector('#hero h1');
+            if (heroText) {
+                const originalText = heroText.textContent;
+                heroText.textContent = '';
+                
+                let i = 0;
+                const typing = setInterval(() => {
+                    if(i < originalText.length) {
+                        heroText.textContent += originalText.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(typing);
+                    }
+                }, 100);
+            }
+            
+            // Form submission handler
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Message sent! (This is a demo - in a real site, this would connect to a backend)');
+                    contactForm.reset();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
